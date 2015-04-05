@@ -26,7 +26,8 @@ typedef enum {
     ERROR_RIGHT_PAREN,
     ERROR_PUSHBACK,
     ERROR_SYMBOL_NAME,
-    ERROR_STEP
+    ERROR_STEP,
+    ERROR_APPLY_ATOM
 } error_t;
 
 
@@ -97,6 +98,7 @@ alloc_t *eq(alloc_t *a, alloc_t *b) {
     return (a == b) ? t_symbol : nil;
 }
 */
+/* Instead of interning symbols */
 alloc_t *eq(alloc_t *a, alloc_t *b) {
     if (a == b ||
             (a->type == SYMBOL && b->type == SYMBOL
@@ -130,30 +132,17 @@ alloc_t *pairlis(alloc_t *x, alloc_t *y, alloc_t *a) {
     alloc_t *r_old;
     
     while (x != nil) {
-        printf("pairing: ");
-        display(r);
-        printf("\n");
         r = cons(cons(car(x), car(y)), r);
         x = cdr(x);
         y = cdr(y);
     }
-    printf("paired : ");
-    display(r);
-    printf("\n");
     
     while (r != nil) {
-        printf("reversing: ");
-        display(a);
-        printf("\n");
         a = cons(car(r), a);
         r_old = r;
         r = cdr(r);
         free_alloc(r_old);
     }
-    
-    printf("pairlis ==> ");
-    display(a);
-    printf("\n");
     
     return a;
 }
@@ -189,7 +178,7 @@ typedef enum {
     EVCON
 } eval_op_t;
 
-#define MAX_STEP (65536)
+#define MAX_STEP (1024)
 
 alloc_t *eval(alloc_t *e, alloc_t *a) {
     eval_op_t eval_op = EVAL;
@@ -201,19 +190,6 @@ alloc_t *eval(alloc_t *e, alloc_t *a) {
      * wouldn't make any real difference. This way it reflects the Lisp code.
      */
     for (i = 0; i < MAX_STEP; i++) {
-    
-        printf("%d. ", i + 1);
-        if (eval_op == APPLY) {
-            display(f);
-            printf("\n@\n");
-        }
-    
-        display(e);
-        printf("\n:\n");
-        display(a);
-        printf("\n\n");
-    
-        printf("\n===> %d\n", eval_op);
         
         switch (eval_op) {
         case EVAL:
@@ -237,6 +213,9 @@ alloc_t *eval(alloc_t *e, alloc_t *a) {
             }
             break;
         case APPLY:
+            if (f == nil) {
+                longjmp(fatal, ERROR_APPLY_ATOM);
+            }
             if (atom(f) != nil) {
                 if (eq(f, car_symbol) != nil) {
                     return car(car(e));
@@ -258,8 +237,8 @@ alloc_t *eval(alloc_t *e, alloc_t *a) {
                 e = car(cdr(cdr(f)));
             } else { /* eq(car(f), label_symbol) != nil */
                 /* eval_op = APPLY */
-                f = car(cdr(cdr(f)));
                 a = cons(cons(car(cdr(f)), car(cdr(cdr(f)))), a);
+                f = car(cdr(cdr(f)));
             }
             break;
         default: /* EVCON */
@@ -519,6 +498,9 @@ int main(void) {
             break;
         case ERROR_STEP:
             printf("Fatal: Ran the maximum allowed steps of eval/apply/evcon!\n");
+            break;
+        case ERROR_APPLY_ATOM:
+            printf("Fatal: Attempted to use an atom as a function!\n");
             break;
         default:
             printf("Fatal: Unknown condition?!\n");
