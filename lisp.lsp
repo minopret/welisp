@@ -3,6 +3,7 @@
         )
 
     '(label assoc (lambda (x a) (cond
+        ((null a) '())
         ((eq (caar a) x) (car a))
         ('t (assoc x (cdr a))) ))) ; assoc
     '(lambda (x) (car (car x))) ; caar
@@ -11,6 +12,7 @@
     '(lambda (x) (car (cdr x))) ; cadr
     '(lambda (x) (cdr (car x))) ; cdar
     '(label evcon (lambda (c a) (cond
+        ((null c) '())
         ((eval (caar c) a) (eval (cadar c) a))
         ('t (evcon (cdr c) a)) ))) ; evcon
     '(label evlis (lambda (m a) (cond
@@ -19,6 +21,7 @@
     '(lambda (x) (eq x '())) ; null
     '(label pairlis (lambda (x y a) (cond
         ((null x) a)
+        ((null y) a)
         ('t (cons (cons (car x) (car y)) (pairlis (cdr x) (cdr y) a))) ))) ; pairlis
 
     '(label apply (lambda (fn x a) (cond

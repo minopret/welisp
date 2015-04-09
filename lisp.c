@@ -3,6 +3,8 @@
  * 2015-03-24
  */
 
+/* TODO case: # arguments does not match # parameters */
+
 #include <setjmp.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -131,7 +133,7 @@ alloc_t *pairlis(alloc_t *x, alloc_t *y, alloc_t *a) {
     alloc_t *r = nil;
     alloc_t *r_old;
     
-    while (x != nil) {
+    while (x != nil && y != nil) {
         r = cons(cons(car(x), car(y)), r);
         x = cdr(x);
         y = cdr(y);
@@ -242,7 +244,9 @@ alloc_t *eval(alloc_t *e, alloc_t *a) {
             }
             break;
         default: /* EVCON */
-            if (eval(car(car(e)), a) != nil) {
+            if (e == nil) {
+                return nil;
+            } else if (eval(car(car(e)), a) != nil) {
                 eval_op = EVAL;
                 e = car(cdr(car(e)));
             } else {
@@ -508,37 +512,6 @@ int main(void) {
         }
         return result;
     }
-
-
-    /*
-    a = &a_storage;
-    b = &b_storage;
-
-    a->type = CELL;
-    a->value.cell.car = quote_symbol;
-    a->value.cell.cdr = b;
-
-    b->type = CELL;
-    b->value.cell.car = t_symbol;
-    b->value.cell.cdr = nil;
-    
-    
-    
-    display(a);
-    printf("\n");
-    
-    display(cons(cons_symbol, cons(car_symbol, nil)));
-    printf("\n");
-    
-    c = cons(cons_symbol, cons(car_symbol, nil));
-    d = pairlis(a, c, nil);
-    
-    display(d);
-    printf("\n");
-
-    display(eval(a, d));
-    printf("\n");
-    */
     
     FILE *in = fopen("test.lsp", "r");
     display(eval(read(in), nil));
