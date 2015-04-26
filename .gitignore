@@ -1,0 +1,4 @@
+.DS_Store
+lisp
+lisp.dSYM/
+test.lsp
