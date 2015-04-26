@@ -3,7 +3,7 @@
  * 2015-03-24
  */
 
-/* TODO case: # arguments does not match # parameters */
+/* TODO case: when # arguments does not match # parameters */
 
 #include <setjmp.h>
 #include <stdbool.h>
@@ -31,6 +31,7 @@ typedef enum {
     ERROR_STEP,
     ERROR_APPLY_ATOM
 } error_t;
+
 
 
 #define SYMBOL_DATA(NAME) \
@@ -189,7 +190,8 @@ alloc_t *eval(alloc_t *e, alloc_t *a) {
     
     /* These three functions are mutually recursive via tail-call.
      * We could rewrite to "simplify" the control flow but it
-     * wouldn't make any real difference. This way it reflects the Lisp code.
+     * wouldn't make much difference in the compiled code.
+     * This way it reflects the Lisp code.
      */
     for (i = 0; i < MAX_STEP; i++) {
         
@@ -259,33 +261,6 @@ alloc_t *eval(alloc_t *e, alloc_t *a) {
 
     longjmp(fatal, ERROR_STEP);
 }
-
-/*
-(evlis (label evlis (lambda (m a) (cond
-    ((null m) (quote ()))
-    ((quote t) (cons (eval (car m) a) (evlis (cdr m) a))) ))))
-
-    may call eval NOT via tail-call
-    may tail-call self modulo cons
-    
-    See alternate implementation note on evcon for another (dismissed) thought.
-
-(evcon (label evcon (lambda (c a) (cond
-    ((eval (caar c) a) (eval (cadar c) a))
-    ((quote t) (evcon (cdr c) a)) ))))
-
-    may call eval NOT via tail-call
-    and THEN will either tail-call eval, or tail-call self
-    
-    alternate implementation:
-    push a pair (a continuation):
-        (action expression for eval if condition evaluates non-nil,
-         action expression for self if condition evaluates nil);
-    THEN tail-call eval, and when eval would otherwise be ready to return,
-        pop and proceed with the next continuation.
-    Eh, this seems like overdoing it unless we want to make the whole interpreter run
-    on continuations. Never mind. Just use the first design, which uses the call stack.
-*/
 
 
 
