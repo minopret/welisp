@@ -24,7 +24,7 @@
 
 (
     (lambda (first second third fourth fifth rest null and    lapply lassoc leval lfirst lnext)
-        ;(lfirst '((Lambda x x) (Lambda s s)))
+        (lfirst '((Lambda x x) (Lambda s s)))
         ; ; 1
         ;(lnext '(Apply (EvalResult ((Lambda x x) (Lambda s s)) () Done)))
         ; ; 2
@@ -49,12 +49,10 @@
         ;(lnext '(Result ((Lambda b (Lambda c ((a b) c))) (a ((Lambda d (Lambda e (d e))))))))
         ;
         ; ; Simplification of this closure is ours to do by hand or to automate further:
-        ; ; = Lambda b (Lambda c ((Lambda e (b e)) c))
-        ; ; = Lambda b (Lambda c (b c))
-        
-        ;(leval '(a b) '((a ((Lambda d (Lambda e (d e)))))))
-        ;(lnext '(Apply (CloseFunc a b ((a ((Lambda d (Lambda e (d e)))))) Done)))
-        (lnext '(Apply (EvalArg ((Lambda d (Lambda e (d e)))) b ((a ((Lambda d (Lambda e (d e)))))) Done)))
+        ; ; = Lambda b (Lambda c (((Lambda d (Lambda e (d e))) b) c)) ; Subst
+        ; ; = Lambda b (Lambda c ((Lambda e (b e)) c)) ; Beta-reduction
+        ; ; = Lambda b (Lambda c (b c)) ; Beta-reduction
+
     )
 
 'car
