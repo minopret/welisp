@@ -1,4 +1,4 @@
-
+(
     (lambda (foldr foldl a b) (foldl '(lambda (c d) (cons c (d))) '() '(a b)))
 
     '(label foldr (lambda (f z u) (cond
