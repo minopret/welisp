@@ -22,6 +22,7 @@ void display(alloc_t *a);
 jmp_buf fatal;
 
 typedef enum {
+    END_OF_FILE,
     ERROR_CAR,
     ERROR_CDR,
     ERROR_CONS,
@@ -35,7 +36,7 @@ typedef enum {
 
 
 #define SYMBOL_DATA(NAME) \
-alloc_t NAME ## _storage = {SYMBOL, { #NAME }}; \
+alloc_t NAME ## _storage = {SYMBOL, {{ #NAME }}}; \
 alloc_t * NAME ## _symbol = & NAME ## _storage;
 
 SYMBOL_DATA(atom)
@@ -440,6 +441,8 @@ alloc_t *read(FILE *f) {
             longjmp(fatal, ERROR_PUSHBACK);
         }
         x = read_symbol(f);
+    } else {
+        longjmp(fatal, END_OF_FILE);
     }
     return x;
 }
@@ -447,8 +450,6 @@ alloc_t *read(FILE *f) {
 
 
 int main(void) {
-    alloc_t *a, a_storage, *b, b_storage;
-    alloc_t *c, *d;
     int result;
     
     nil->value.cell.cdr = nil;
@@ -456,6 +457,8 @@ int main(void) {
     result = setjmp(fatal);
     if (result) {
         switch(result) {
+        case END_OF_FILE:
+            break;
         case ERROR_CAR:
             printf("Fatal: Only a cell can have a car!\n");
             break;
